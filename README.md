@@ -52,6 +52,23 @@ Se a API estiver indisponível, exceder a quota (`HTTP 429`), devolver erro de s
 
 No fallback, uma divergência não é inferida a partir de uma palavra isolada. A comparação agrupa acórdãos por área e tema e procura decisões opostas, como `Concedido` e `Negado`. A fundamentação identifica processos, anos e tribunais existentes no corpus. Esta comparação é um sinal para revisão, não uma conclusão automática de contradição jurídica.
 
+## Utilização de IA no processo
+
+### Ferramentas e workflow
+
+- **Google Gemini 2.5 Flash**, através do SDK oficial `@google/genai`, para análise estruturada dos acórdãos e comparação de decisões do mesmo cluster temático.
+- **GitHub Copilot e Claude** como apoio ao scaffolding, geração de testes, exploração de alternativas e refatoração durante o desenvolvimento.
+- **Esquemas JSON tipados** para orientar a extração de área, tema, sumário executivo, tese jurídica, decisão e divergência. O prompt distingue a tese substantiva da reprodução literal de excertos extensos.
+- **Pipeline híbrido**: a indisponibilidade da API não impede a execução. `ANALYZE_FORCE_LOCAL=1` força o fallback heurístico local; falhas de rede, quota ou resposta estruturada inválida também encaminham a análise para esse fallback.
+
+### O que funcionou e desafios
+
+A síntese assistida por LLM permite transformar sumários densos em teses mais acessíveis, e o apoio de IA acelerou o desenvolvimento da interface React/Next.js. Estes resultados dependem da disponibilidade e da quota do serviço e devem ser revistos antes de uso jurídico.
+
+A deteção de divergências exige especial cuidado com negações e construções como «não se afigura ilícito» ou «é lícito». Uma comparação semântica ingénua pode confundir posições opostas ou tratar como divergentes decisões sobre factos ou normas diferentes. Por isso, o pipeline agrupa por matéria e compara as teses e decisões do cluster; os resultados heurísticos são alertas para validação humana.
+
+A infraestrutura pública do DGSI pode responder com erros ou indisponibilidade. A recolha sequencial, os timeouts e as pausas defensivas reduzem a pressão sobre a origem; não garantem disponibilidade contínua nem substituem uma política de retry aprovada pelo serviço.
+
 ## Caso de estudo: correio eletrónico processual
 
 O corpus inclui duas decisões do **Tribunal da Relação de Coimbra** sobre a apresentação de atos processuais por correio eletrónico:
@@ -62,6 +79,13 @@ O corpus inclui duas decisões do **Tribunal da Relação de Coimbra** sobre a a
 | 2020 | `359/17.0GBFND.C1` | Admite a remessa de peças processuais por correio eletrónico no enquadramento jurídico analisado, citando jurisprudência do STJ. |
 
 A diferença entre os resultados serve como exemplo de comparação temporal e temática. O acórdão de 2016 refere o Acórdão de Uniformização de Jurisprudência do STJ n.º 3/2014; isso não significa que os dois registos sejam decisões do STJ nem confirma, por si só, uma divergência material. É necessário ler os acórdãos e validar se as questões jurídicas e os enquadramentos são efetivamente comparáveis.
+
+## Limitações do protótipo
+
+- **Amostra reduzida:** o corpus serve um caso de estudo sobre atos processuais por correio eletrónico no Tribunal da Relação de Coimbra, com referência a jurisprudência do STJ. Inclui também outros acórdãos usados para exercitar a pipeline; não representa a totalidade do DGSI nem constitui uma amostra estatística.
+- **Heurística de apoio:** a deteção automática de divergências é um sinal de alerta para o jurista. Uma diferença de resultado, isoladamente, não prova contradição jurídica; é necessária leitura integral das decisões e do respetivo contexto processual.
+- **Sínteses sujeitas a validação:** as teses e os sumários produzidos por LLM ou pelo fallback local podem omitir contexto, simplificar distinções ou classificar incorretamente uma decisão. Confirme sempre os dados e fundamentos no acórdão original do DGSI.
+- **Dependência externa opcional:** a análise Gemini depende de quota e disponibilidade da API. O fallback local permite executar a pipeline sem o serviço, mas é menos sofisticado e não substitui a comparação jurídica assistida.
 
 ## Instalação
 
